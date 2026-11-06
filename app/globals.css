@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+html, body {
+  background: #f4f2f0;
+  color: #1c1418;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  background-image:
+    radial-gradient(circle at 78% -8%, rgba(200, 16, 46, 0.08), transparent 26rem),
+    linear-gradient(180deg, #f7f5f3 0%, #f4f2f0 48%, #f1ecee 100%);
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #efe8ea; }
+::-webkit-scrollbar-thumb { background: #c9b4b8; border-radius: 4px; }
+
+.table-scroll {
+  overflow-x: auto;
+  scrollbar-width: auto;
+  scrollbar-color: #a34a5a #efe8ea;
+}
+.table-scroll::-webkit-scrollbar { height: 12px; }
+.table-scroll::-webkit-scrollbar-track { background: #efe8ea; border-radius: 999px; }
+.table-scroll::-webkit-scrollbar-thumb { background: #a34a5a; border: 2px solid #efe8ea; border-radius: 999px; }
+
+button, a, input, select, textarea { transition: border-color .2s ease, background-color .2s ease, color .2s ease, transform .2s ease, box-shadow .2s ease; }
+button:active { transform: translateY(1px); }
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-rise-in { animation: rise-in .55s cubic-bezier(.2,.8,.2,1) both; }
+.dashboard-stagger { animation: rise-in .5s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes kpi-pulse {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(28, 20, 24, .08), 0 12px 28px rgba(28, 20, 24, .08); }
+  50% { box-shadow: 0 0 0 2px rgba(200, 16, 46, .35), 0 0 24px rgba(200, 16, 46, .12), 0 16px 32px rgba(28, 20, 24, .1); }
+}
+.kpi-glow.dashboard-stagger { animation: rise-in .5s cubic-bezier(.2,.8,.2,1) both, kpi-pulse 1.2s ease-in-out 1 both; }
+.glass-panel {
+  background: #ffffff;
+  border: 1px solid #e4d9dc;
+  box-shadow: 0 1px 0 rgba(28, 20, 24, 0.04), 0 14px 36px rgba(28, 20, 24, 0.08);
+}
+
+.issue-sheet {
+  border-collapse: collapse;
+  background: #ffffff;
+}
+.issue-sheet th {
+  background: #217346;
+  color: #ffffff;
+  font-weight: 600;
+  border: 1px solid #1b5e3c;
+  letter-spacing: 0.01em;
+}
+.issue-sheet td {
+  border: 1px solid #c8c8c8;
+  background: transparent;
+  color: #1c1418;
+  vertical-align: top;
+}
+.issue-sheet tbody tr:nth-child(even) td {
+  background: transparent;
+}
+.issue-sheet tbody tr:hover td {
+  background: rgba(33, 115, 70, .08);
+}
+.issue-sheet input, .issue-sheet select {
+  background: #ffffff;
+  color: #1c1418;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise-in, .dashboard-stagger, .kpi-glow { animation: none; }
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid #c8102e;
+  outline-offset: 0;
+}
+
+/* Printing (Weekly Report > Save as PDF): plain white A4 pages, the whole report instead of the scroll window. */
+@media print {
+  @page { size: A4 landscape; margin: 10mm; }
+  html, body, .bg-brembo-paper { background: #fff !important; background-image: none !important; }
+  .h-screen { height: auto !important; }
+  .overflow-auto, .overflow-hidden { overflow: visible !important; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  tr { break-inside: avoid; }
+  h3 { break-after: avoid; }
+}

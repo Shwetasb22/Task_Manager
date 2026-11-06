@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Brembo Program Command - End-to-End Website Flow</title>
+  <desc id="desc">A PowerPoint-ready overview of sign-in, role-scoped task data, daily status calculation, website views, user actions, shared updates, and current versus future Excel import paths.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#7C8792"/>
+    </marker>
+    <marker id="arrowRed" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#D7193F"/>
+    </marker>
+  </defs>
+
+  <rect width="1600" height="900" fill="#F2F4F5"/>
+  <rect x="0" y="0" width="1600" height="116" fill="#FFFFFF"/>
+  <rect x="0" y="0" width="12" height="116" fill="#D7193F"/>
+  <text x="64" y="56" fill="#15191D" font-family="Aptos, Arial, sans-serif" font-size="34" font-weight="700">Brembo Program Command</text>
+  <text x="66" y="87" fill="#53606A" font-family="Aptos, Arial, sans-serif" font-size="17">End-to-end website flow | shared task management for Admins, Managers and Owners</text>
+  <rect x="1320" y="36" width="215" height="38" rx="19" fill="#E9F4EF"/>
+  <circle cx="1342" cy="55" r="5" fill="#24845B"/>
+  <text x="1356" y="61" fill="#236B4C" font-family="Aptos, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="1">CURRENT APP FLOW</text>
+
+  <text x="64" y="158" fill="#69747D" font-family="Aptos, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="1.5">HOW A TASK UPDATE MOVES THROUGH THE WEBSITE</text>
+
+  <g fill="none" stroke="#7C8792" stroke-width="2.5" marker-end="url(#arrow)">
+    <path d="M318 320 H352"/>
+    <path d="M623 320 H657"/>
+    <path d="M928 320 H962"/>
+    <path d="M1233 320 H1267"/>
+  </g>
+
+  <g font-family="Aptos, Arial, sans-serif">
+    <rect x="64" y="185" width="254" height="276" rx="9" fill="#FFFFFF" stroke="#D8DEE2" stroke-width="1.5"/>
+    <rect x="64" y="185" width="254" height="7" rx="4" fill="#D7193F"/>
+    <circle cx="94" cy="225" r="17" fill="#FCE8EC"/>
+    <text x="94" y="231" text-anchor="middle" fill="#B81736" font-size="16" font-weight="700">01</text>
+    <text x="88" y="275" fill="#15191D" font-size="22" font-weight="700">Sign in</text>
+    <text x="88" y="307" fill="#53606A" font-size="15">Supabase Auth in production</text>
+    <text x="88" y="333" fill="#53606A" font-size="15">Demo quick login locally</text>
+    <line x1="88" y1="355" x2="294" y2="355" stroke="#E6EAED"/>
+    <text x="88" y="384" fill="#15191D" font-size="14" font-weight="700">Role established</text>
+    <rect x="88" y="400" width="54" height="26" rx="13" fill="#FCE8EC"/>
+    <text x="115" y="418" text-anchor="middle" fill="#B81736" font-size="11" font-weight="700">ADMIN</text>
+    <rect x="150" y="400" width="72" height="26" rx="13" fill="#E7F1F7"/>
+    <text x="186" y="418" text-anchor="middle" fill="#28617D" font-size="11" font-weight="700">MANAGER</text>
+    <rect x="230" y="400" width="56" height="26" rx="13" fill="#FFF3D8"/>
+    <text x="258" y="418" text-anchor="middle" fill="#86621B" font-size="11" font-weight="700">OWNER</text>
+
+    <rect x="369" y="185" width="254" height="276" rx="9" fill="#FFFFFF" stroke="#D8DEE2" stroke-width="1.5"/>
+    <rect x="369" y="185" width="254" height="7" rx="4" fill="#1685A0"/>
+    <circle cx="399" cy="225" r="17" fill="#E4F4F7"/>
+    <text x="399" y="231" text-anchor="middle" fill="#126A80" font-size="16" font-weight="700">02</text>
+    <text x="393" y="275" fill="#15191D" font-size="22" font-weight="700">Load shared tasks</text>
+    <text x="393" y="307" fill="#53606A" font-size="15">Production: Supabase</text>
+    <text x="393" y="333" fill="#53606A" font-size="15">Tasks + proof metadata</text>
+    <line x1="393" y1="355" x2="599" y2="355" stroke="#E6EAED"/>
+    <text x="393" y="384" fill="#15191D" font-size="14" font-weight="700">One shared data store</text>
+    <text x="393" y="410" fill="#53606A" font-size="13">Demo mode instead uses seed data</text>
+    <text x="393" y="431" fill="#53606A" font-size="13">and browser-local edits.</text>
+
+    <rect x="674" y="185" width="254" height="276" rx="9" fill="#FFFFFF" stroke="#D8DEE2" stroke-width="1.5"/>
+    <rect x="674" y="185" width="254" height="7" rx="4" fill="#38815C"/>
+    <circle cx="704" cy="225" r="17" fill="#E8F3EC"/>
+    <text x="704" y="231" text-anchor="middle" fill="#2A6848" font-size="16" font-weight="700">03</text>
+    <text x="698" y="275" fill="#15191D" font-size="22" font-weight="700">Scope + calculate</text>
+    <text x="698" y="307" fill="#53606A" font-size="15">Database RLS scopes rows</text>
+    <text x="698" y="333" fill="#53606A" font-size="15">by Admin / Manager / Owner</text>
+    <line x1="698" y1="355" x2="904" y2="355" stroke="#E6EAED"/>
+    <text x="698" y="384" fill="#15191D" font-size="14" font-weight="700">App derives daily indicators</text>
+    <text x="698" y="410" fill="#53606A" font-size="13">RGY, overdue and escalation</text>
+    <text x="698" y="431" fill="#53606A" font-size="13">from task dates and status.</text>
+
+    <rect x="979" y="185" width="254" height="276" rx="9" fill="#FFFFFF" stroke="#D8DEE2" stroke-width="1.5"/>
+    <rect x="979" y="185" width="254" height="7" rx="4" fill="#C18B20"/>
+    <circle cx="1009" cy="225" r="17" fill="#FFF3D8"/>
+    <text x="1009" y="231" text-anchor="middle" fill="#86621B" font-size="16" font-weight="700">04</text>
+    <text x="1003" y="275" fill="#15191D" font-size="22" font-weight="700">Use work views</text>
+    <text x="1003" y="307" fill="#53606A" font-size="15">Dashboard + Daily Update</text>
+    <text x="1003" y="333" fill="#53606A" font-size="15">Task Register + Proofs</text>
+    <line x1="1003" y1="355" x2="1209" y2="355" stroke="#E6EAED"/>
+    <text x="1003" y="384" fill="#15191D" font-size="14" font-weight="700">Daily Update highlights</text>
+    <text x="1003" y="410" fill="#53606A" font-size="13">Red, Yellow and missing-date</text>
+    <text x="1003" y="431" fill="#53606A" font-size="13">actions; copy or export CSV.</text>
+
+    <rect x="1284" y="185" width="254" height="276" rx="9" fill="#FFFFFF" stroke="#D8DEE2" stroke-width="1.5"/>
+    <rect x="1284" y="185" width="254" height="7" rx="4" fill="#6F5B91"/>
+    <circle cx="1314" cy="225" r="17" fill="#F0ECF5"/>
+    <text x="1314" y="231" text-anchor="middle" fill="#5B477D" font-size="16" font-weight="700">05</text>
+    <text x="1308" y="275" fill="#15191D" font-size="22" font-weight="700">Take action</text>
+    <text x="1308" y="307" fill="#53606A" font-size="14">Manager: dates + remarks</text>
+    <text x="1308" y="332" fill="#53606A" font-size="14">Owner: upload proof</text>
+    <line x1="1308" y1="355" x2="1514" y2="355" stroke="#E6EAED"/>
+    <text x="1308" y="384" fill="#15191D" font-size="14" font-weight="700">Manager / Admin</text>
+    <text x="1308" y="410" fill="#53606A" font-size="13">reviews proof, closes or</text>
+    <text x="1308" y="431" fill="#53606A" font-size="13">reopens the issue.</text>
+  </g>
+
+  <rect x="64" y="493" width="1474" height="88" rx="9" fill="#172027"/>
+  <circle cx="103" cy="537" r="20" fill="#D7193F"/>
+  <path d="M94 537h17m-6-7 7 7-7 7" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="140" y="530" fill="#FFFFFF" font-family="Aptos, Arial, sans-serif" font-size="18" font-weight="700">SAVE + SHARE</text>
+  <text x="140" y="554" fill="#CBD3D8" font-family="Aptos, Arial, sans-serif" font-size="14">Authorized changes persist in Supabase; task events are audited and Realtime prompts other signed-in views to refresh.</text>
+  <path d="M1480 537 H1510" fill="none" stroke="#D7193F" stroke-width="2.5" marker-end="url(#arrowRed)"/>
+
+  <text x="64" y="630" fill="#69747D" font-family="Aptos, Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="1.5">EXCEL TRACKER CONNECTION</text>
+
+  <g font-family="Aptos, Arial, sans-serif">
+    <rect x="64" y="652" width="714" height="177" rx="9" fill="#FFFFFF" stroke="#D8DEE2" stroke-width="1.5"/>
+    <rect x="64" y="652" width="8" height="177" rx="4" fill="#C18B20"/>
+    <rect x="91" y="675" width="136" height="26" rx="13" fill="#FFF3D8"/>
+    <text x="159" y="693" text-anchor="middle" fill="#86621B" font-size="11" font-weight="700" letter-spacing=".8">AVAILABLE TODAY</text>
+    <text x="91" y="730" fill="#15191D" font-size="19" font-weight="700">Manual demo-data import</text>
+    <text x="91" y="758" fill="#53606A" font-size="14">Local workbook -&gt; scripts/parse-excel.py -&gt; lib/tasks-seed.json</text>
+    <text x="91" y="783" fill="#53606A" font-size="14">This updates demo seed data only; it does not sync SharePoint or Supabase.</text>
+    <text x="91" y="808" fill="#A15F13" font-size="13" font-weight="700">Not an automatic or team-shared Excel connection.</text>
+
+    <rect x="824" y="652" width="714" height="177" rx="9" fill="#FFFFFF" stroke="#D8DEE2" stroke-width="1.5" stroke-dasharray="7 5"/>
+    <rect x="824" y="652" width="8" height="177" rx="4" fill="#1685A0"/>
+    <rect x="851" y="675" width="156" height="26" rx="13" fill="#E4F4F7"/>
+    <text x="929" y="693" text-anchor="middle" fill="#126A80" font-size="11" font-weight="700" letter-spacing=".8">FUTURE INTEGRATION</text>
+    <text x="851" y="730" fill="#15191D" font-size="19" font-weight="700">Automatic company workbook sync</text>
+    <text x="851" y="758" fill="#53606A" font-size="14">SharePoint -&gt; Graph / Power Automate -&gt; protected importer -&gt; Supabase</text>
+    <text x="851" y="783" fill="#53606A" font-size="14">Requires implementation, field mapping, and company Microsoft 365 approval.</text>
+    <text x="851" y="808" fill="#126A80" font-size="13" font-weight="700">After import, authorized website users see shared task updates.</text>
+  </g>
+
+  <text x="64" y="866" fill="#69747D" font-family="Aptos, Arial, sans-serif" font-size="12">Brembo Program Command | Operational workflow overview</text>
+  <text x="1538" y="866" text-anchor="end" fill="#69747D" font-family="Aptos, Arial, sans-serif" font-size="12">SVG vector artwork - insert into PowerPoint</text>
+</svg>

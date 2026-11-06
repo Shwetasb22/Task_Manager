@@ -1,0 +1,59 @@
+# Checks every push and pull request: lint, unit tests, a production build, and every database update
+# plus the SQL tests on a throwaway PostgreSQL (with a small stand-in for Supabase's auth and storage).
+# Nothing here touches the real Supabase project; no secrets are needed.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  app:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      # Without Supabase settings the app builds in demo mode, which compiles every page.
+      - run: npm run build
+
+  database:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+    steps:
+      - uses: actions/checkout@v4
+      - name: Supabase stand-in
+        run: psql "$DATABASE_URL" -X -q -v ON_ERROR_STOP=1 -f supabase/tests/ci/supabase-stub.sql
+      - name: Apply every database update
+        run: supabase/apply-migrations.sh
+      - name: Database updates are safe to run twice
+        run: |
+          for f in supabase/migrations/[0-9]*.sql; do
+            psql "$DATABASE_URL" -X -q -v ON_ERROR_STOP=1 -c 'set client_min_messages = warning' -f "$f"
+          done
+      - name: SQL tests
+        run: |
+          failed=0
+          for f in supabase/tests/*.sql; do
+            if psql "$DATABASE_URL" -X -q -v ON_ERROR_STOP=1 -f "$f" > /tmp/out.txt 2>&1; then
+              echo "PASS $(basename "$f")"
+            else
+              echo "FAIL $(basename "$f")"; cat /tmp/out.txt; failed=1
+            fi
+          done
+          exit $failed

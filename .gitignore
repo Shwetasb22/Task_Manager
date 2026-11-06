@@ -1,0 +1,19 @@
+# dependencies and build output
+node_modules/
+.next/
+out/
+
+# secrets (never commit these)
+.env
+.env.*
+!.env.example
+
+# tool/work folders
+.work/
+.manus/
+
+# misc
+*.log
+.DS_Store
+*.sqlite
+*.db

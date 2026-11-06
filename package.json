@@ -1,0 +1,32 @@
+{
+  "name": "brembo-program-command",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
+    "start": "next start",
+    "lint": "eslint app components lib next.config.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "fflate": "0.8.3",
+    "lucide-react": "^0.383.0",
+    "next": "^16.4.5",
+    "nodemailer": "10.3.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "recharts": "^2.12.7"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.19",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.3.8",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.4"
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  }
+}
