@@ -144,8 +144,9 @@ export default function Sop() {
 
         <Section id="access" title="5. Access and sign-in">
           <Bullets items={[
-            'Sign in with your Brembo Outlook ID and password. Owners may self-register only with an @bremboindia.com address; passwords must be at least 8 characters.',
-            'A self-registered owner sees only issues assigned to their name. Admin, Dept Head and Platform Manager roles (and a manager’s tracker) are assigned only by an Admin.',
+            'Sign in with your Brembo Outlook ID and password. Everyone signs up with an @bremboindia.com address and chooses Owner or Manager; passwords must be at least 8 characters.',
+            'An Owner is let in straight away and sees only issues assigned to their name. A Manager request waits on a "Waiting for approval" screen until an Admin approves it (People page, Access requests) and names the manager’s tracker.',
+            'Admin and Dept Head roles cannot be requested at sign-up; they are assigned only by an Admin.',
             'Use "Forgot password" to reset a password. Never share an account or a password.',
             'Log out on shared computers. Logging out removes the copy of issues kept in that browser.',
           ]} />

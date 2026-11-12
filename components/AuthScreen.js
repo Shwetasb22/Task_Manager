@@ -4,6 +4,7 @@ import { store, usingSupabase } from '@/lib/store';
 import { QUICK_LOGINS } from '@/lib/data';
 import { ArrowRight, Eye, EyeOff, Sparkles, UserRound } from 'lucide-react';
 import Logo from './Logo';
+import { SIGNUP_ROLES } from '@/lib/access';
 
 const OWNER_EMAIL_PATTERN = /^[^\s@]+@bremboindia\.com$/i;
 
@@ -13,6 +14,7 @@ export default function AuthScreen({ onLogin }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [ownerName, setOwnerName] = useState('');
   const [ownerDept, setOwnerDept] = useState('');
+  const [role, setRole] = useState('Owner'); // what the person asks to be; a Manager waits for an Admin
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [mode, setMode] = useState('login');
@@ -52,7 +54,7 @@ export default function AuthScreen({ onLogin }) {
 
       setBusy(true);
       try {
-        const session = await store.signUp({ name, email: email.trim(), password, department: dept || 'Unassigned' });
+        const session = await store.signUp({ name, email: email.trim(), password, department: dept || 'Unassigned', role });
         onLogin(session);
         setEmail('');
         setPassword('');
@@ -91,7 +93,15 @@ export default function AuthScreen({ onLogin }) {
       await store.resetPassword(email);
       setMsg({ type: 'ok', text: 'If that ID exists, a password-reset link has been emailed.' });
     } catch (err) {
-      setMsg({ type: 'error', text: err.message });
+      const text = err?.message || '';
+      setMsg({
+        type: 'error',
+        text: /rate limit|too many|security purposes/i.test(text)
+          ? 'Too many reset emails were requested. Wait a few minutes and try again.'
+          : /not authorized|not allowed/i.test(text)
+            ? 'The email service is not set up to send to this address yet. Ask your admin to connect the email sender (SMTP) in Supabase.'
+            : text,
+      });
     }
   }
 
@@ -122,7 +132,7 @@ export default function AuthScreen({ onLogin }) {
                 Sign up
               </button>
             </div>
-            <h2 className="font-display text-lg font-bold mb-1">{mode === 'signup' ? 'Owner sign up' : 'Team member log in'}</h2>
+            <h2 className="font-display text-lg font-bold mb-1">{mode === 'signup' ? 'Create your account' : 'Team member log in'}</h2>
             {mode === 'login' ? (
               usingSupabase ? (
                 <>
@@ -154,8 +164,21 @@ export default function AuthScreen({ onLogin }) {
               )
             ) : (
               <>
+                <div role="radiogroup" aria-label="I am signing up as" className="grid grid-cols-2 gap-2">
+                  {SIGNUP_ROLES.map((r) => (
+                    <button key={r} type="button" role="radio" aria-checked={role === r} onClick={() => setRole(r)}
+                      className={`rounded-lg border px-3 py-2 text-left text-xs ${role === r ? 'border-brembo-red bg-brembo-red/10 text-brembo-ink' : 'border-brembo-line bg-white text-brembo-sub hover:border-brembo-red'}`}>
+                      <b className="block text-[13px]">{r}</b>
+                      <span className="text-[10.5px]">{r === 'Owner' ? 'Work on issues assigned to you' : 'Run a tracker. An Admin approves you first'}</span>
+                    </button>
+                  ))}
+                </div>
                 <Field label="Full name"><input value={ownerName} onChange={(e) => setOwnerName(e.target.value)} placeholder="e.g. Yogita Salunkhe" className="input" /></Field>
-                <p className="-mt-2 text-[11px] text-brembo-sub">Enter your full name. You will see every issue assigned to you in any manager&apos;s tracker, whether it is written as “Yogita”, “Yogita Salunke” or “Salunkhe Yogita”.</p>
+                <p className="-mt-2 text-[11px] text-brembo-sub">
+                  {role === 'Manager'
+                    ? 'Enter your full name. An Admin will check your request and set up your tracker before you can enter.'
+                    : 'Enter your full name. You will see every issue assigned to you in any manager’s tracker, whether it is written as “Yogita”, “Yogita Salunke” or “Salunkhe Yogita”.'}
+                </p>
                 <Field label="Department"><input value={ownerDept} onChange={(e) => setOwnerDept(e.target.value)} placeholder="e.g. Maintenance / QA" className="input" /></Field>
                 <Field label="Outlook ID"><input type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@brembo.com" className="input" /></Field>
                 <Field label="Password">
@@ -171,9 +194,9 @@ export default function AuthScreen({ onLogin }) {
             )}
             {msg && <div className={`text-xs rounded-lg px-3 py-2 ${msg.type === 'error' ? 'bg-brembo-red/10 text-[#9b1224]' : 'bg-brembo-green/10 text-[#146b38]'}`}>{msg.text}</div>}
             <button type="submit" disabled={busy} className="mt-1 bg-brembo-red hover:bg-[#ff3d56] disabled:opacity-60 text-white font-bold text-sm py-3 rounded-lg flex items-center justify-center gap-2 shadow-[0_8px_22px_rgba(229,45,69,.25)]">
-              {busy ? 'Please wait…' : mode === 'signup' ? 'Create owner account' : 'Enter command center'} <ArrowRight size={16} />
+              {busy ? 'Please wait…' : mode === 'signup' ? (role === 'Manager' ? 'Request manager access' : 'Create owner account') : 'Enter command center'} <ArrowRight size={16} />
             </button>
-            {mode === 'login' && usingSupabase && <p className="text-[11px] text-brembo-sub mt-1">No account? Use the Sign up tab for owner onboarding.</p>}
+            {mode === 'login' && usingSupabase && <p className="text-[11px] text-brembo-sub mt-1">No account? Use the Sign up tab to join as an Owner or request Manager access.</p>}
           </form>
         </div>
       </div>
@@ -196,7 +219,9 @@ export function SetPassword({ onDone }) {
       await store.updatePassword(pw);
       onDone();
     } catch (err) {
-      setMsg(err.message);
+      setMsg(/session missing/i.test(err.message || '')
+        ? 'This reset link is no longer valid. Go back, choose "Forgot password?" and open the new link straight away.'
+        : err.message);
     }
   }
   return (
@@ -208,6 +233,7 @@ export function SetPassword({ onDone }) {
         <Field label="Confirm password"><input type="password" value={pw2} onChange={(e) => setPw2(e.target.value)} className="input" autoComplete="new-password" /></Field>
         {msg && <div className="text-xs text-[#9b1224]">{msg}</div>}
         <button type="submit" className="bg-brembo-red hover:bg-[#ff3d56] text-white font-bold text-sm py-2.5 rounded-lg">Save password</button>
+        <button type="button" onClick={onDone} className="text-xs text-brembo-sub hover:text-brembo-red">Back to sign in</button>
       </form>
     </div>
   );

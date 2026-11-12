@@ -4,13 +4,14 @@ import { Check, Pencil, Plus, Trash2, UserPlus, Wand2, X } from 'lucide-react';
 import { ownerSpellingsReport } from '@/lib/employees';
 import { normName, ownerTokens } from '@/lib/owners';
 import { DEFAULT_DEPARTMENTS } from '@/lib/issues';
+import AccessRequests from './AccessRequests';
 
 const input = 'bg-white border border-brembo-line rounded-md px-2 py-1.5 text-[12.5px] focus:outline-none focus:border-brembo-red';
 const btn = 'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-bold border';
 
 // Employee list (who can own an issue) and a clean-up table for old spellings in the trackers.
 // Admins, dept heads and managers maintain the list; only admins remove people.
-export default function People({ session, employees, tasks, departments = [], onSave, onDelete, onRename, onSaveDepartment }) {
+export default function People({ session, employees, tasks, departments = [], accessRequests = [], trackers = [], onReviewAccess, onSave, onDelete, onRename, onSaveDepartment }) {
   const isAdmin = session.role === 'Admin';
   const canEditNames = session.role === 'Dept Head' || session.canEditOwnerNames === true;
   const [q, setQ] = useState('');
@@ -57,6 +58,8 @@ export default function People({ session, employees, tasks, departments = [], on
           {isAdmin ? ' You can add, edit, deactivate and remove people.' : ' You can add and edit people and mark leavers inactive.'}
         </p>
       </div>
+
+      {isAdmin && onReviewAccess && <AccessRequests requests={accessRequests} trackers={trackers} onReview={onReviewAccess} />}
 
       <form onSubmit={add} className="bg-white border border-brembo-line rounded-lg p-3 mb-4 flex flex-wrap items-end gap-2 shadow-card">
         <label className="flex flex-col text-[11px] uppercase tracking-wide text-brembo-sub gap-1">Full name

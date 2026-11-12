@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Bookmark, BookmarkPlus, Check, ChevronLeft, ChevronRight, Download, Eye, FileSpreadsheet, FlagTriangleRight, History, Paperclip, Pencil, Plus, RotateCcw, Upload, X } from 'lucide-react';
 import { ACCEPT, canRemoveProof } from '@/lib/proofs';
 import { fmtDate, getTaskRowTone, getTaskStatusPresentation, startOfToday } from '@/lib/rules';
@@ -24,6 +24,34 @@ export default function TaskRegister({ tasks, session, managers = [], department
   const [quick, setQuick] = useState('all');
   const [columnFilters, setColumnFilters] = useState({});
   const [naming, setNaming] = useState(null); // name typed for a new saved view, or null when closed
+  // The table is taller than the screen, so its own sideways scrollbar sits out of sight below the
+  // last row. A second scrollbar pinned to the bottom of the screen mirrors it instead.
+  const sheetRef = useRef(null);
+  const sliderRef = useRef(null);
+  const [slider, setSlider] = useState({ width: 0, show: false });
+  useEffect(() => {
+    const box = sheetRef.current;
+    if (!box) return undefined;
+    const measure = () => setSlider((cur) => {
+      const next = { width: box.scrollWidth, show: box.scrollWidth > box.clientWidth + 1 };
+      return cur.width === next.width && cur.show === next.show ? cur : next;
+    });
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(box);
+    if (box.firstElementChild) observer.observe(box.firstElementChild);
+    return () => observer.disconnect();
+  }, []);
+  // Moving one bar moves the other, and that move reports back as a scroll of its own. Without
+  // skipping that echo the two bars correct each other on every frame and the slider stutters.
+  const echoRef = useRef(null);
+  const syncScroll = (from, to) => {
+    if (!from || !to) return;
+    if (echoRef.current === from) { echoRef.current = null; return; }
+    const before = to.scrollLeft;
+    to.scrollLeft = from.scrollLeft;
+    if (to.scrollLeft !== before) echoRef.current = to;
+  };
   // Rendering every issue at once (about 12,000 editable cells for 1,000 issues) made the page
   // lag, so the register shows one page at a time. Search and Download still cover every match.
   const [pageSize, setPageSize] = useState(50);
@@ -274,7 +302,7 @@ export default function TaskRegister({ tasks, session, managers = [], department
           onClear={() => setSelected(new Set())}
         />
       )}
-      <div className="table-scroll border border-[#1b5e3c] rounded-sm overflow-auto bg-white shadow-defined">
+      <div ref={sheetRef} onScroll={() => syncScroll(sheetRef.current, sliderRef.current)} className={`table-scroll border border-[#1b5e3c] rounded-sm overflow-auto bg-white shadow-defined ${slider.show ? 'no-scrollbar' : ''}`}>
         <table className="issue-sheet w-full min-w-[1680px] text-[12px]">
           <thead>
             <tr>
@@ -383,6 +411,11 @@ export default function TaskRegister({ tasks, session, managers = [], department
           </tbody>
         </table>
         <datalist id="register-departments">{departments.map((d) => <option key={d} value={d} />)}</datalist>
+      </div>
+      {/* -bottom-10 cancels the page's pb-10, so the slider rests on the bottom edge of the screen. */}
+      <div ref={sliderRef} onScroll={() => syncScroll(sliderRef.current, sheetRef.current)} aria-hidden="true"
+        className={`table-scroll sticky -bottom-10 z-20 overflow-y-hidden border-x border-transparent bg-[#efe8ea] print:hidden ${slider.show ? '' : 'hidden'}`}>
+        <div style={{ width: slider.width, height: 1 }} />
       </div>
       {pageCount > 1 && (
         <div className="flex justify-end mt-2">

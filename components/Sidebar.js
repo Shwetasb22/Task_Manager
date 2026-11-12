@@ -37,8 +37,8 @@ export default function Sidebar({ session, activeView, onNavigate, managers, tea
             {t.label}
             {badges[t.id] > 0 && (
               <span
-                title={`${badges[t.id]} escalation${badges[t.id] === 1 ? '' : 's'} need your action`}
-                aria-label={`${badges[t.id]} escalations need your action`}
+                title={t.id === 'people' ? `${badges[t.id]} access request${badges[t.id] === 1 ? '' : 's'} waiting for review` : `${badges[t.id]} escalation${badges[t.id] === 1 ? '' : 's'} need your action`}
+                aria-label={t.id === 'people' ? `${badges[t.id]} access requests waiting for review` : `${badges[t.id]} escalations need your action`}
                 className={`ml-auto rounded-full px-1.5 py-px text-[10px] font-bold leading-4 animate-pulse ${activeView === t.id ? 'bg-white text-brembo-red' : 'bg-brembo-red text-white'}`}
               >
                 {badges[t.id] > 99 ? '99+' : badges[t.id]}

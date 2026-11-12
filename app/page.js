@@ -2,6 +2,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import AuthScreen, { SetPassword } from '@/components/AuthScreen';
+import AccessPending from '@/components/AccessPending';
+import { parseAuthLink } from '@/lib/auth-link';
+import { isApproved } from '@/lib/access';
 import Logo from '@/components/Logo';
 import Sidebar from '@/components/Sidebar';
 import TopBar from '@/components/TopBar';
@@ -116,6 +119,10 @@ export default function Home() {
   const [session, setSession] = useState(null);
   const [authReady, setAuthReady] = useState(false);
   const [recovery, setRecovery] = useState(false);
+  // Signed in but not yet approved (a Manager request waiting for an Admin), or declined.
+  // Kept apart from `session` so no data is requested for them.
+  const [awaiting, setAwaiting] = useState(null);
+  const [accessRequests, setAccessRequests] = useState([]); // Admin only: Manager requests to review
   const [entryStep, setEntryStep] = useState('landing');
   const [sessionError, setSessionError] = useState(null);
   const [viewAsManager, setViewAsManager] = useState(null);
@@ -156,8 +163,20 @@ export default function Home() {
       return () => {};
     }
 
+    // A reset link carries its purpose in the address. Read it now rather than waiting for the
+    // PASSWORD_RECOVERY event, which can arrive before this page is listening.
+    const link = parseAuthLink(window.location.hash, window.location.search);
+    if (link.recovery) setRecovery(true);
+    if (link.error) window.history.replaceState(null, '', window.location.pathname);
+
     store.getSession()
       .then((s) => {
+        if (isValidSession(s) && !isApproved(s)) {
+          setAwaiting(s);
+          setSession(null);
+          setSessionError(null);
+          return;
+        }
         if (isValidSession(s)) {
           setSession(s);
           setSessionError(null);
@@ -165,7 +184,7 @@ export default function Home() {
           return;
         }
         setSession(null);
-        setSessionError(null);
+        setSessionError(link.error);
         setEntryStep('landing');
       })
       .catch(() => {
@@ -179,6 +198,7 @@ export default function Home() {
       if (ev === 'PASSWORD_RECOVERY') setRecovery(true);
       if (ev === 'SIGNED_OUT') {
         setSession(null);
+        setAwaiting(null);
         setSessionError(null);
         setEntryStep('landing');
       }
@@ -306,6 +326,30 @@ export default function Home() {
     };
   }, [session, reload, refreshEvents, flash]);
 
+  // Admin only: Manager requests waiting for approval. Checked now and once a minute.
+  const isAdminSession = session?.role === 'Admin';
+  const loadAccessRequests = useCallback(() => {
+    store.listAccessRequests().then(setAccessRequests).catch(() => {});
+  }, []);
+  useEffect(() => {
+    if (!isAdminSession) { setAccessRequests([]); return undefined; }
+    loadAccessRequests();
+    const timer = setInterval(loadAccessRequests, 60000);
+    return () => clearInterval(timer);
+  }, [isAdminSession, loadAccessRequests]);
+  async function reviewAccess(request, approve, tracker) {
+    try {
+      await store.reviewAccessRequest(request.id, approve, tracker);
+      flash('ok', approve ? `${request.name} approved.` : `${request.name}'s request was declined.`);
+      loadAccessRequests();
+      if (approve) store.listManagers().then(setManagerNames).catch(() => {});
+      return true;
+    } catch (error) {
+      flash('error', formatError(error));
+      return false;
+    }
+  }
+
   const tasks = useMemo(() => sortBySerial(raw.map((t) => deriveTask(t, today))), [raw, today]);
   // Id lookup for bulk actions (selecting all issues would otherwise scan the list once per issue).
   const rawById = useMemo(() => new Map(raw.map((t) => [t.id, t])), [raw]);
@@ -337,12 +381,36 @@ export default function Home() {
       setEntryStep('landing');
       return;
     }
+    if (!isApproved(user)) {
+      setAwaiting(user);
+      setSession(null);
+      setSessionError(null);
+      return;
+    }
+    setAwaiting(null);
     setSession(user);
     setSessionError(null);
     setEntryStep('app');
     setViewAsManager(null);
     setActiveView('dashboard');
     setFilters(NO_FILTERS);
+  }
+  // Called by the waiting screen: true once an Admin has approved this person.
+  async function recheckAccess() {
+    const latest = await store.getSession();
+    if (!isValidSession(latest)) return false;
+    if (!isApproved(latest)) {
+      setAwaiting(latest);
+      return false;
+    }
+    handleLogin(latest);
+    return true;
+  }
+  async function leaveWaitingScreen() {
+    try { await store.signOut(); } catch {}
+    setAwaiting(null);
+    setSession(null);
+    setEntryStep('landing');
   }
   async function handleLogout() {
     try { await store.signOut(); } catch {}
@@ -492,9 +560,9 @@ export default function Home() {
   }
   const viewProof = (task, proof) => setViewer({ task, proof });
 
-  // Only the Platform Manager application role may create new issues. Keep edit permissions
-  // separate so limiting creation does not remove existing review/edit work.
-  const canAddIssue = session?.role === 'Manager' && !session.pending;
+  // Platform Managers (in their own tracker) and Admins (in any tracker) may create new issues and
+  // import trackers. Keep edit permissions separate so this does not remove review/edit work.
+  const canAddIssue = (session?.role === 'Manager' && !session.pending) || session?.role === 'Admin';
   const canEditIssue = ['Admin', 'Dept Head', 'Owner'].includes(session?.role) || (session?.role === 'Manager' && !session.pending);
   const canDeleteIssue = session?.role === 'Admin' || (session?.role === 'Manager' && !session.pending);
 
@@ -908,6 +976,7 @@ export default function Home() {
   }
   if (!authReady) return <div className="min-h-screen flex items-center justify-center text-brembo-sub text-sm">Loading…</div>;
   if (recovery) return <SetPassword onDone={() => setRecovery(false)} />;
+  if (awaiting) return <AccessPending session={awaiting} onRecheck={recheckAccess} onLogout={leaveWaitingScreen} />;
   if (!session && entryStep === 'landing') {
     return <LandingScreen onContinue={() => setEntryStep('auth')} />;
   }
@@ -936,7 +1005,7 @@ export default function Home() {
         onSelectManager={(name) => { setViewAsManager((cur) => (cur === name ? null : name)); setActiveView('dashboard'); }}
         onLogout={handleLogout}
         hiddenTabs={store.mode === 'supabase' ? [] : ['lists']}
-        badges={{ morning: myEscalationCount }}
+        badges={{ morning: myEscalationCount, people: accessRequests.length }}
         open={sidebarOpen}
       />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
@@ -1014,7 +1083,7 @@ export default function Home() {
           )}
           {activeView === 'proofs' && <UploadedProofs tasks={scopedTasks} session={session} onViewProof={viewProof} onRemoveProof={removeProof} onSetRemark={setRemark} onClose={closeIssue} onReopen={reopen} onError={(text) => flash('error', text)} />}
           {activeView === 'lists' && session.role === 'Admin' && <Lists store={store} onChanged={listsChanged} onError={(text) => flash('error', text)} onDone={(text) => flash('ok', text)} />}
-          {activeView === 'people' && canManagePeople && <People session={session} employees={employees} tasks={scopedTasks} departments={departmentChoices || []} onSave={saveEmployee} onDelete={deleteEmployee} onRename={renameOwner} onSaveDepartment={saveDepartment} />}
+          {activeView === 'people' && canManagePeople && <People session={session} accessRequests={accessRequests} trackers={managers} onReviewAccess={reviewAccess} employees={employees} tasks={scopedTasks} departments={departmentChoices || []} onSave={saveEmployee} onDelete={deleteEmployee} onRename={renameOwner} onSaveDepartment={saveDepartment} />}
           {activeView === 'sop' && <Sop />}
         </div>
       </div>

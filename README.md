@@ -128,3 +128,4 @@ These scripts create temporary fixtures in transactions and roll them back. Do n
 - the login screen is intentionally the first visible page
 - demo mode is suitable for local testing only
 - the production backend should remain the enforcement point for auth, RBAC, and proof access
+z
